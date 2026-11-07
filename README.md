@@ -1,43 +1,51 @@
 # Automated API Security Scanner
-#### Video Demo:  [COLE AQUI A URL DO YOUTUBE]
+#### Video Demo: [COLE AQUI A URL DO YOUTUBE]
 #### Name: Rafael Oliveira Campos
 #### City/Country: Timóteo, Minas Gerais, Brazil
 
 ## Description
-The Automated API Security Scanner is a Python-based tool designed to validate the security posture of web application programming interfaces (APIs). As modern applications heavily rely on APIs, ensuring they implement proper security headers and configurations is a critical step in a DevSecOps pipeline. 
+The Automated API Security Scanner is a Python-based Command Line Interface (CLI) tool that checks whether an API response includes selected security headers. This check can help developers and QA engineers identify headers that may be missing, but it does not assess an API's overall security or determine whether the header values are correctly configured.
 
-This project automates the process of sending requests to a target API endpoint, analyzing the HTTP response headers, and identifying missing or misconfigured security controls (such as CORS policies, Strict-Transport-Security, Content-Security-Policy, and X-Frame-Options). At the end of the execution, the tool generates a comprehensive security report detailing the vulnerabilities found and providing remediation steps.
-
-This tool was built to bridge the gap between quality assurance and cybersecurity, allowing automated tests to fail or warn developers if security standards are not met before deployment.
+This project automates the process of sending an HTTP GET request to a target API endpoint, extracting the HTTP response headers, and analyzing them. The tool checks for the presence or absence of selected headers, including Strict-Transport-Security, Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Permissions-Policy, and Cache-Control. It generates an easy-to-read report directly in the terminal. It checks header presence only; it does not validate header values or provide remediation steps.
 
 ## Files Structure
 Here is a breakdown of the files included in this project and their respective roles:
 
-*   **`scanner.py`**: The main execution script. It handles the command-line arguments (CLI), orchestrates the HTTP requests using the `requests` library, and invokes the analysis engine.
-*   **`analyzer.py`**: This module contains the core logic for inspecting headers. It cross-references the headers returned by the API against a predefined dictionary of required security headers and acceptable values.
-*   **`report_generator.py`**: Responsible for formatting the findings. It takes the raw analysis data and exports it into a readable format (e.g., JSON or a structured CLI output) for easy integration with CI/CD pipelines.
-*   **`requirements.txt`**: Lists all external Python dependencies required to run the project (e.g., `requests`, `colorama` for terminal styling).
-*   **`test_endpoints.txt`**: A sample text file containing mock API URLs used to demonstrate and test the scanner's capabilities without targeting live production systems inappropriately.
+*   **`scanner.py`**: The main execution script. It uses the `argparse` library to handle command-line arguments, orchestrates the HTTP requests using the `requests` library (with a built-in timeout to prevent hangs), and invokes the analysis and reporting modules.
+*   **`analyzer.py`**: This module contains the core verification logic. It holds a predefined dictionary (`SECURITY_HEADERS`) of required security headers and their descriptions. It cross-references the headers returned by the API (converting them to lowercase for accurate comparison) and categorizes them strictly into 'found' or 'missing'. It identifies if headers are present or absent; it does not verify if the values are well-configured.
+*   **`report_generator.py`**: Responsible for formatting the terminal output. It utilizes the `colorama` library to print a visually distinct report, coloring the section titles green for found headers and red for missing headers (vulnerabilities).
+*   **`requirements.txt`**: Lists all external Python dependencies required to run the project (`requests`, `colorama`, and specifically `urllib3<2` to ensure SSL/TLS compatibility on macOS environments).
+*   **`.gitignore`**: Ensures that the local Python virtual environment (`.venv`) is not tracked by Git, keeping the repository clean.
+*   **`.vscode/settings.json`**: (Local development only) Directs the Visual Studio Code workspace to use the isolated Python interpreter from the virtual environment.
 
 ## Design Decisions
 During the development of this tool, several architectural and design choices were made:
 
-1.  **Language Choice (Python):** Python was selected due to its powerful standard library and the `requests` module, which makes handling HTTP transactions straightforward. It is also the industry standard for security scripting and automation.
-2.  **Modular Architecture:** Instead of writing a single monolithic script, the logic was split into `scanner.py`, `analyzer.py`, and `report_generator.py`. This makes the codebase maintainable, easier to unit test, and scalable if future modules (like authentication testing or payload injection) need to be added.
-3.  **Focus on Security Headers:** While API security encompasses many areas (like rate limiting or SQLi), I chose to focus strictly on security headers for this scope. Misconfigured headers are a common OWASP vulnerability and are easily verifiable through passive scanning, ensuring the tool is safe to use and doesn't perform intrusive or destructive actions against unauthorized targets.
-4.  **No GUI (Command Line Interface):** A CLI approach was chosen over a graphical interface because this tool is intended to be used by engineers or integrated into automated continuous integration pipelines, where visual interfaces are not applicable.
+1.  **Modular Architecture:** Instead of writing a single monolithic script, the logic was split into `scanner.py`, `analyzer.py`, and `report_generator.py`. This separation of concerns makes the codebase highly maintainable, easier to unit test, and scalable.
+2.  **Virtual Environment Isolation:** A `.venv` keeps project dependencies separate from the system Python installation. Compatibility can still depend on the Python version, operating system, and SSL/TLS configuration.
+3.  **Focus on Presence of Security Headers:** The scanner makes a GET request and checks the presence of selected HTTP response headers. It does not send exploit payloads or modify the target, but only scan systems you own or are authorized to test.
+4.  **CLI over GUI:** A Command Line Interface approach was chosen over a graphical interface because this tool is intended to be used by engineers in terminal environments.
 
 ## How to Run
-To execute the Automated API Security Scanner locally, follow these steps:
+To execute the Automated API Security Scanner locally, follow these steps in your terminal:
 
-1.  **Install dependencies:** Ensure you have Python 3 installed. Run the following command to install the required libraries:
+1.  **Activate the Virtual Environment:**
+    Ensure you are in the project directory and activate the environment:
+    ```bash
+    source .venv/bin/activate
+    ```
+
+2.  **Install dependencies:**
+    Install the required libraries listed in the requirements file:
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Execute the scanner:** Run the main script passing the target API URL as an argument.
+3.  **Execute the scanner:**
+    Run the main script passing the target API URL using the `-u` argument:
     ```bash
-    python scanner.py --url [https://api.example.com](https://api.example.com)
+    python scanner.py -u https://api.github.com
     ```
 
-3.  **Read the report:** The tool will output the results directly to the terminal, highlighting missing headers in red and properly configured headers in green.
+4.  **Read the report:**
+    The tool will output the results directly to the terminal, separating found and missing headers into distinct sections.
