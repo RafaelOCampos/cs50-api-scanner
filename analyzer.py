@@ -1,26 +1,26 @@
 # analyzer.py
 
-# Dicionário com os principais cabeçalhos de segurança e suas descrições
+# Dicionário dos cabeçalhos de segurança e descrições / Security headers and descriptions
 SECURITY_HEADERS = {
-    'Strict-Transport-Security': 'Força a comunicação segura via HTTPS.',
-    'Content-Security-Policy': 'Previne ataques de injeção de dados e XSS (Cross-Site Scripting).',
-    'X-Content-Type-Options': 'Previne ataques de MIME-sniffing (deve estar como "nosniff").',
-    'X-Frame-Options': 'Previne ataques de Clickjacking (deve estar como DENY ou SAMEORIGIN).',
-    'Permissions-Policy': 'Restringe quais recursos do navegador a API/aplicação pode usar.',
-    'Cache-Control': 'Garante que informações sensíveis não fiquem salvas no cache do navegador.'
+    'Strict-Transport-Security': 'Força HTTPS / Enforces HTTPS.',
+    'Content-Security-Policy': 'Ajuda a prevenir injeção de dados e XSS / Helps prevent data injection and XSS.',
+    'X-Content-Type-Options': 'Ajuda a prevenir MIME sniffing (use "nosniff") / Helps prevent MIME sniffing (use "nosniff").',
+    'X-Frame-Options': 'Ajuda a prevenir clickjacking (use DENY ou SAMEORIGIN) / Helps prevent clickjacking (use DENY or SAMEORIGIN).',
+    'Permissions-Policy': 'Restringe recursos do navegador / Restricts browser features.',
+    'Cache-Control': 'Controla o armazenamento em cache / Controls caching behavior.'
 }
 
 def analyze_headers(headers):
     """
-    Analisa os cabeçalhos HTTP retornados pela API.
-    Retorna um dicionário separando o que foi encontrado e o que está faltando.
+    Analisa os cabeçalhos HTTP retornados pela API / Analyze HTTP response headers.
+    Retorna os cabeçalhos encontrados e ausentes / Return found and missing headers.
     """
     results = {
         'found': {},
         'missing': {}
     }
     
-    # Converte os cabeçalhos recebidos para minúsculas para facilitar a comparação exata
+    # Converte os nomes para minúsculas para comparação / Lowercase names for comparison
     lower_headers = {k.lower(): v for k, v in headers.items()}
 
     for header, description in SECURITY_HEADERS.items():
